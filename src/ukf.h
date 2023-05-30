@@ -1,6 +1,7 @@
 #ifndef UKF_H
 #define UKF_H
 
+#include <vector>
 #include "Eigen/Dense"
 #include "measurement_package.h"
 
@@ -104,6 +105,11 @@ class UKF {
 
   // Sigma point spreading parameter
   double lambda_;
+
+  // store NIS values in a vector
+  std::vector<double> lidarNISVec;
+  std::vector<double> radarNISVec;
+
 };
 
 #endif  // UKF_H

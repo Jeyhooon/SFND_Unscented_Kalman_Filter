@@ -1,4 +1,5 @@
 #include <iostream>
+#include <numeric>
 #include "ukf.h"
 #include "Eigen/Dense"
 
@@ -22,10 +23,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 1.5;
+  std_a_ = 1.0;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.5;
+  std_yawdd_ = 1.0;
   
   /**
    * DO NOT MODIFY measurement noise values below.
@@ -64,6 +65,8 @@ UKF::UKF() {
   x_aug_ = VectorXd(n_aug_);
   P_aug_ = MatrixXd(n_aug_, n_aug_);
   weights_ = VectorXd(2*n_aug_+1);
+  lidarNISVec.clear();
+  radarNISVec.clear();
 }
 
 UKF::~UKF() {}
@@ -92,7 +95,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
       double px = rho * cos(phi);       
       double py = rho * sin(phi);       // direction of driving x-axis (everything is based on ego coordinate)
-      double v = rho_dot * cos(phi);    // vx: not the v, but good initialization for highway scenario (better than zero or rho_dot)
+      double v = rho_dot; //* cos(phi);    // vx: not the v, but good initialization for highway scenario (better than zero or rho_dot)
       
       x_ << px, py, v, 0, 0;
     }
@@ -288,6 +291,15 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   x_ = x_ + K_ * z_diff_;
   P_ = P_ - K_ * S_ * K_.transpose();
 
+  // Calculate Lidar NIS
+  double NIS_lidar_threshold = 5.99;
+  double NIS_lidar_ = z_diff_.transpose() * S_.inverse() * z_diff_;
+  lidarNISVec.push_back(NIS_lidar_);
+  double meanNISLidar = std::accumulate(lidarNISVec.begin(), lidarNISVec.end(), 0.0) / lidarNISVec.size();
+  if (meanNISLidar >= NIS_lidar_threshold)
+  {
+    std::cerr << "Warning: NIS_Lidar Passed Threshold of 5.99: " << meanNISLidar << std::endl;
+  }
 }
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
@@ -379,4 +391,13 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   x_ = x_ + K_ * z_diff_;
   P_ = P_ - K_*S_*K_.transpose();
 
+  // Calculate Radar NIS
+  double NIS_radar_threshold = 7.8;
+  double NIS_radar_ = z_diff_.transpose() * S_.inverse() * z_diff_;
+  radarNISVec.push_back(NIS_radar_);
+  double meanNISRadar = std::accumulate(radarNISVec.begin(), radarNISVec.end(), 0.0) / radarNISVec.size();
+  if (meanNISRadar >= NIS_radar_threshold)
+  {
+    std::cerr << "Warning: NIS_Radar Passed Threshold of 7.8: " << meanNISRadar << std::endl;
+  }
 }
