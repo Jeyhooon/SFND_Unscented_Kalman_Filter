@@ -298,7 +298,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   double meanNISLidar = std::accumulate(lidarNISVec.begin(), lidarNISVec.end(), 0.0) / lidarNISVec.size();
   if (meanNISLidar >= NIS_lidar_threshold)
   {
-    std::cerr << "Warning: NIS_Lidar Passed Threshold of 5.99: " << meanNISLidar << std::endl;
+    std::cerr << "Warning: NIS_Lidar Passed Threshold of " << NIS_lidar_threshold << ": " << meanNISLidar << std::endl;
   }
 }
 
@@ -398,6 +398,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   double meanNISRadar = std::accumulate(radarNISVec.begin(), radarNISVec.end(), 0.0) / radarNISVec.size();
   if (meanNISRadar >= NIS_radar_threshold)
   {
-    std::cerr << "Warning: NIS_Radar Passed Threshold of 7.8: " << meanNISRadar << std::endl;
+    std::cerr << "Warning: NIS_Radar Passed Threshold of " << NIS_radar_threshold << ": " << meanNISRadar << std::endl;
   }
 }
